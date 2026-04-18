@@ -1,0 +1,291 @@
+
+<h2 class="sr-only">Interactive RACI matrix with Three Lines of Defense, add and remove capabilities</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; }
+.toolbar input, .toolbar select { font-size: 13px; padding: 6px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+.toolbar input { width: 190px; }
+.toolbar button { font-size: 13px; padding: 6px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-primary); cursor: pointer; }
+.toolbar button:hover { background: var(--color-background-secondary); }
+.wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; min-width: 820px; }
+th { background: var(--color-background-secondary); color: var(--color-text-secondary); font-weight: 500; font-size: 11px; padding: 7px 8px; border: 0.5px solid var(--color-border-tertiary); text-align: center; }
+th.act-th { text-align: left; width: 200px; }
+th.dom-th { text-align: left; width: 90px; font-size: 10px; }
+th.lod-th { font-size: 10px; font-weight: 600; padding: 5px 4px; }
+th.lod-1 { background: #E6F1FB; color: #0C447C; }
+th.lod-2 { background: #FAEEDA; color: #633806; }
+th.lod-3 { background: #EAF3DE; color: #27500A; }
+th.role-th { font-size: 10px; width: 72px; }
+td { padding: 6px 8px; border: 0.5px solid var(--color-border-tertiary); vertical-align: middle; color: var(--color-text-primary); }
+td.raci-cell { text-align: center; width: 72px; }
+td.lod-1-col { border-left: 2px solid #B5D4F4; }
+td.lod-2-col { border-left: 2px solid #FAC775; }
+td.lod-3-col { border-left: 2px solid #C0DD97; }
+select.raci-select { font-size: 11px; width: 54px; border: 0.5px solid var(--color-border-tertiary); border-radius: 4px; background: transparent; color: var(--color-text-primary); padding: 2px 1px; cursor: pointer; text-align: center; }
+tr:nth-child(even) td { background: var(--color-background-secondary); }
+tr:hover td { background: var(--color-background-info); }
+.section-row td { background: #EEEDFE; color: #3C3489; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; border-radius: 4px; padding: 2px 6px; }
+.badge-R { background: #E6F1FB; color: #0C447C; }
+.badge-A { background: #FAEEDA; color: #633806; }
+.badge-C { background: #EAF3DE; color: #27500A; }
+.badge-I { background: #F1EFE8; color: #444441; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+.legend-item { font-size: 12px; color: var(--color-text-secondary); }
+.lod-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; }
+.lod-pill { font-size: 11px; font-weight: 500; border-radius: 4px; padding: 3px 10px; }
+.lod-pill-1 { background: #E6F1FB; color: #0C447C; }
+.lod-pill-2 { background: #FAEEDA; color: #633806; }
+.lod-pill-3 { background: #EAF3DE; color: #27500A; }
+.del-btn { background: none; border: none; color: var(--color-text-secondary); cursor: pointer; font-size: 13px; padding: 2px 5px; border-radius: 4px; line-height: 1; }
+.del-btn:hover { background: #FCEBEB; color: #A32D2D; }
+.icon-btn { background: none; border: none; color: var(--color-text-secondary); cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 4px; }
+.icon-btn:hover { background: var(--color-background-secondary); }
+.add-row { font-size: 12px; color: var(--color-text-info); background: none; border: none; cursor: pointer; padding: 6px 0; }
+.add-row:hover { text-decoration: underline; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+.stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.stat-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.manage-panel { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 14px 16px; margin-bottom: 1.25rem; background: var(--color-background-secondary); }
+.manage-panel h3 { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px; }
+.role-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.role-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); }
+.role-chip .line-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-1 { background: #378ADD; }
+.dot-2 { background: #BA7517; }
+.dot-3 { background: #3B6D11; }
+.chip-del { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 14px; line-height: 1; padding: 0 0 0 2px; }
+.chip-del:hover { color: #A32D2D; }
+.tab-bar { display: flex; gap: 4px; margin-bottom: 1rem; }
+.tab { font-size: 12px; padding: 5px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.tab.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+</style>
+
+<div style="padding: 1rem 0;">
+
+<div class="stats" id="stats"></div>
+
+<div class="lod-legend">
+  <span class="lod-pill lod-pill-1">1st line — Business / Engineering / Operations</span>
+  <span class="lod-pill lod-pill-2">2nd line — Risk, Compliance & InfoSec</span>
+  <span class="lod-pill lod-pill-3">3rd line — Internal & External Audit</span>
+</div>
+
+<div class="legend">
+  <span class="badge badge-R">R</span>&nbsp;<span class="legend-item">Responsible</span>&nbsp;&nbsp;
+  <span class="badge badge-A">A</span>&nbsp;<span class="legend-item">Accountable</span>&nbsp;&nbsp;
+  <span class="badge badge-C">C</span>&nbsp;<span class="legend-item">Consulted</span>&nbsp;&nbsp;
+  <span class="badge badge-I">I</span>&nbsp;<span class="legend-item">Informed</span>
+</div>
+
+<div class="manage-panel">
+  <h3>Manage roles</h3>
+  <div class="role-chips" id="role-chips"></div>
+  <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center;">
+    <input type="text" id="new-role-name" placeholder="Role name..." style="width:160px;" />
+    <select id="new-role-line">
+      <option value="1">1st line</option>
+      <option value="2">2nd line</option>
+      <option value="3">3rd line</option>
+    </select>
+    <button onclick="addRole()">+ Add role</button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="new-activity" placeholder="Add activity..." />
+  <select id="new-domain">
+    <option>Governance</option>
+    <option>Risk Management</option>
+    <option>Compliance</option>
+    <option>Security Operations</option>
+    <option>People & HR</option>
+    <option>Technology</option>
+    <option>Legal</option>
+  </select>
+  <button onclick="addRow()">+ Add row</button>
+  <button style="margin-left:auto;" onclick="exportCSV()">Export CSV ↗</button>
+</div>
+
+<div class="wrapper">
+  <table id="raci-table">
+    <thead id="thead"></thead>
+    <tbody id="raci-body"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+const OPTS = ['','R','A','C','I'];
+
+let roleGroups = [
+  { line: 1, roles: ['Board / Exec', 'Engineering Lead', 'IT / IAM', 'HR / People Ops'] },
+  { line: 2, roles: ['CISO', 'Risk & Compliance', 'Legal'] },
+  { line: 3, roles: ['Internal Audit', 'External Audit'] }
+];
+
+const defaultRows = [
+  { domain:'Governance', activity:'Approve risk appetite & tolerance',           v:['A','C','I','I','R','C','I','I',''] },
+  { domain:'Governance', activity:'Information security policy approval',         v:['A','C','I','I','R','C','C','I',''] },
+  { domain:'Governance', activity:'Board security reporting (quarterly)',          v:['A','','','','R','C','I','C',''] },
+  { domain:'Governance', activity:'ISMS Management Review (steering)',             v:['I','C','C','C','A','R','I','C','I'] },
+  { domain:'Governance', activity:'Org structure & RACI review',                  v:['I','C','C','A','C','C','I','I',''] },
+  { domain:'Risk Management', activity:'Annual InfoSec risk assessment',           v:['I','C','C','','A','R','C','C',''] },
+  { domain:'Risk Management', activity:'Risk treatment plan development',          v:['I','C','C','','A','R','I','C',''] },
+  { domain:'Risk Management', activity:'Third-party / vendor risk review',         v:['I','C','I','I','A','R','C','C',''] },
+  { domain:'Risk Management', activity:'Business continuity / DR planning',        v:['I','C','R','I','A','C','I','C',''] },
+  { domain:'Compliance', activity:'ISO 27001 / SOC 2 audit management',           v:['I','C','C','C','A','R','C','R','I'] },
+  { domain:'Compliance', activity:'Regulatory change monitoring',                  v:['I','','I','I','C','R','A','C',''] },
+  { domain:'Compliance', activity:'Policy review & lifecycle management',          v:['I','C','I','I','A','R','C','C',''] },
+  { domain:'Security Operations', activity:'Incident detection & response',        v:['I','C','R','','A','C','I','I',''] },
+  { domain:'Security Operations', activity:'Vulnerability management & patching',  v:['I','C','R','','A','C','','C',''] },
+  { domain:'Security Operations', activity:'Access provisioning / deprovisioning', v:['I','C','R','C','A','I','','I',''] },
+  { domain:'Security Operations', activity:'Privileged access review (PAR)',       v:['I','C','R','I','A','C','','R',''] },
+  { domain:'People & HR', activity:'Pre-employment background verification',       v:['I','','I','A','C','I','C','I',''] },
+  { domain:'People & HR', activity:'Security onboarding & offboarding',            v:['I','C','R','R','A','C','','I',''] },
+  { domain:'People & HR', activity:'Security awareness training program',          v:['I','C','C','C','A','R','','I',''] },
+  { domain:'People & HR', activity:'Performance management (security KPIs)',       v:['I','A','I','I','C','I','I','I',''] },
+  { domain:'Technology', activity:'Cloud security configuration mgmt',             v:['I','R','R','','A','C','','C',''] },
+  { domain:'Technology', activity:'Security architecture review',                  v:['I','R','R','','A','C','','C',''] },
+  { domain:'Legal', activity:'Cyber insurance procurement & review',               v:['A','','I','I','C','C','R','',''] },
+  { domain:'Legal', activity:'Data breach regulatory notification',                v:['A','','R','I','C','C','R','I',''] },
+];
+
+let rows = defaultRows.map(r => ({ ...r, v: [...r.v] }));
+
+function allRoles() {
+  return roleGroups.flatMap(g => g.roles.map(r => ({ line: g.line, name: r })));
+}
+
+function renderChips() {
+  const container = document.getElementById('role-chips');
+  container.innerHTML = '';
+  const flat = allRoles();
+  flat.forEach((r, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'role-chip';
+    chip.innerHTML = `<span class="line-dot dot-${r.line}"></span>${r.name}<button class="chip-del" onclick="removeRole(${i})" title="Remove role">×</button>`;
+    container.appendChild(chip);
+  });
+}
+
+function renderHeader() {
+  const thead = document.getElementById('thead');
+  thead.innerHTML = '';
+  const flat = allRoles();
+  const lodRow = document.createElement('tr');
+  lodRow.innerHTML = '<th class="act-th" rowspan="2">Activity / Control</th><th class="dom-th" rowspan="2">Domain</th>';
+  roleGroups.forEach(g => {
+    if (!g.roles.length) return;
+    const labels = ['','1st line — Business / Engineering / Operations','2nd line — Risk, Compliance & InfoSec','3rd line — Internal & External Audit'];
+    lodRow.innerHTML += `<th class="lod-th lod-${g.line}" colspan="${g.roles.length}">${labels[g.line]}</th>`;
+  });
+  lodRow.innerHTML += '<th rowspan="2" style="width:28px;"></th>';
+  thead.appendChild(lodRow);
+
+  const roleRow = document.createElement('tr');
+  flat.forEach(r => {
+    const isFirst = flat.indexOf(r) === 0 || flat[flat.indexOf(r)-1].line !== r.line;
+    roleRow.innerHTML += `<th class="role-th${isFirst?' lod-'+r.line+'-col':''}" style="white-space:normal;line-height:1.3;">${r.name}</th>`;
+  });
+  thead.appendChild(roleRow);
+}
+
+function renderBody() {
+  const tbody = document.getElementById('raci-body');
+  tbody.innerHTML = '';
+  const flat = allRoles();
+  let lastDomain = null;
+
+  rows.forEach((row, ri) => {
+    if (row.domain !== lastDomain) {
+      const sec = document.createElement('tr');
+      sec.className = 'section-row';
+      sec.innerHTML = `<td colspan="${2 + flat.length + 1}">${row.domain}</td>`;
+      tbody.appendChild(sec);
+      lastDomain = row.domain;
+    }
+    const tr = document.createElement('tr');
+    let html = `<td style="font-size:12px;">${row.activity}</td><td style="font-size:11px;color:var(--color-text-secondary);">${row.domain}</td>`;
+    flat.forEach((r, ci) => {
+      const isFirst = ci === 0 || flat[ci-1].line !== r.line;
+      const cls = `raci-cell${isFirst ? ' lod-'+r.line+'-col' : ''}`;
+      const val = row.v[ci] || '';
+      html += `<td class="${cls}"><select class="raci-select" onchange="setCellVal(${ri},${ci},this.value)">`;
+      OPTS.forEach(o => { html += `<option value="${o}"${o===val?' selected':''}>${o}</option>`; });
+      html += `</select></td>`;
+    });
+    html += `<td style="text-align:center;"><button class="del-btn" title="Remove row" onclick="removeRow(${ri})">×</button></td>`;
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+}
+
+function render() { renderChips(); renderHeader(); renderBody(); updateStats(); }
+
+function setCellVal(ri, ci, val) { rows[ri].v[ci] = val; updateStats(); }
+
+function updateStats() {
+  let R=0,A=0,C=0,I=0;
+  rows.forEach(row => row.v.forEach(v => { if(v==='R')R++; else if(v==='A')A++; else if(v==='C')C++; else if(v==='I')I++; }));
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Activities</div><div class="stat-val">${rows.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Roles</div><div class="stat-val">${allRoles().length}</div></div>
+    <div class="stat-card"><div class="stat-label">R / A assignments</div><div class="stat-val">${R+A}</div></div>
+    <div class="stat-card"><div class="stat-label">Total assignments</div><div class="stat-val">${R+A+C+I}</div></div>`;
+}
+
+function addRow() {
+  const act = document.getElementById('new-activity').value.trim();
+  const dom = document.getElementById('new-domain').value;
+  if (!act) return;
+  rows.push({ domain: dom, activity: act, v: allRoles().map(() => '') });
+  document.getElementById('new-activity').value = '';
+  render();
+}
+
+function removeRow(ri) {
+  if (!confirm(`Remove "${rows[ri].activity}"?`)) return;
+  rows.splice(ri, 1);
+  render();
+}
+
+function addRole() {
+  const name = document.getElementById('new-role-name').value.trim();
+  const line = parseInt(document.getElementById('new-role-line').value);
+  if (!name) return;
+  const g = roleGroups.find(g => g.line === line);
+  g.roles.push(name);
+  rows.forEach(r => {
+    const insertAt = allRoles().length - 1;
+    r.v.push('');
+  });
+  document.getElementById('new-role-name').value = '';
+  render();
+}
+
+function removeRole(flatIdx) {
+  const flat = allRoles();
+  const target = flat[flatIdx];
+  if (!confirm(`Remove role "${target.name}" from line ${target.line}? All assignments for this role will be lost.`)) return;
+  const g = roleGroups.find(g => g.line === target.line);
+  const roleIdxInGroup = g.roles.indexOf(target.name);
+  g.roles.splice(roleIdxInGroup, 1);
+  rows.forEach(r => r.v.splice(flatIdx, 1));
+  render();
+}
+
+function exportCSV() {
+  const flat = allRoles();
+  const header = ['Activity','Domain',...flat.map(r=>`[${r.line}L] ${r.name}`)].map(v=>`"${v}"`).join(',');
+  const body = rows.map(r => [`"${r.activity}"`,`"${r.domain}"`,...r.v.map(v=>`"${v||''}"`)].join(',')).join('\n');
+  const blob = new Blob([header+'\n'+body],{type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='RACI_3LoD_Matrix.csv'; a.click();
+}
+
+render();
+</script>
